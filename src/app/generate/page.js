@@ -15,7 +15,7 @@ const page = () => {
   const { isWeb3Enabled, account } = useMoralis();
   const [isLoader, setIsLoader] = useState(false);
   const [firstComit, setfisrtCommit] = useState(true);
-  const [loader, setLoader] = useState(true);
+  const [loader, setLoader] = useState(false);
   const [title, setTitle] = useState("");
   const [file, setFile] = useState([]);
   console.log(fileStore);
