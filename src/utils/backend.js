@@ -49,16 +49,8 @@ export async function readData() {
 }
 
 export async function getTables(signer) {
-  // const db = new Database();
-  // const { results } = await db
-  //   .prepare(`.listTables(0xbce910FAF9Ba3a0795d4D9E414dc52c2fCD5a587);`)
-  //   .all();
-  // const res = await Registry.listTables(
-  //   { signer },
-  //   "0xbce910FAF9Ba3a0795d4D9E414dc52c2fCD5a587"
-  // );
   const reg = await new Registry({ signer });
   const results = await reg.listTables();
-  console.log(results);
+  console.log(results[0]);
   return results;
 }
