@@ -5,10 +5,13 @@ import { useMoralis } from "react-moralis";
 import { Header } from "@/components";
 import { downloadSequence } from "@/utils/getSequence";
 import { FileIcon } from "@/assets";
+import { ethers } from "ethers";
+import { addCommit, createTable, getTables, readData } from "@/utils/backend";
 
 const page = () => {
   const { titleStore, fileStore, setFileStore } = useContext(Message_data);
   const { isWeb3Enabled, account } = useMoralis();
+  const [isLoader, setIsLoader] = useState(false);
   const [title, setTitle] = useState("");
   const [file, setFile] = useState([]);
   console.log(fileStore);
@@ -37,8 +40,23 @@ const page = () => {
     console.log(newFiles);
   };
 
-  const downloadList = () => {
-    downloadSequence(file);
+  const downloadList = async () => {
+    // downloadSequence(file);
+    // const provider = new ethers.providers.Web3Provider(window.ethereum);
+    // await provider.send("eth_requestAccounts", []);
+    // const signer = await provider.getSigner();
+    // await addCommit(signer);
+  };
+
+  const generateHash = async () => {
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    await provider.send("eth_requestAccounts", []);
+    const signer = await provider.getSigner();
+    // await createTable(signer);
+    await getTables(signer);
+
+    // if (file.length != 0) {
+    // }
   };
   return (
     <div className="bg-[#1F1D2B] w-screen h-screen text-white">
@@ -90,7 +108,10 @@ const page = () => {
                   />
                 </label>
               </button>
-              <button className="bg-[#565F8B] text-[1.5rem] font-semibold w-[50%] py-3 rounded-lg">
+              <button
+                onClick={() => generateHash()}
+                className="bg-[#565F8B] text-[1.5rem] font-semibold w-[50%] py-3 rounded-lg"
+              >
                 Generate Hash
               </button>
               <button
