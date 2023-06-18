@@ -24,7 +24,7 @@ const Header = () => {
             <Link href="/">App Menu</Link>
           </li>
           <li className="cursor-pointer">
-            <Link href="/">Commits</Link>
+            <Link href="/commits">Commits</Link>
           </li>
         </div>
       </div>
