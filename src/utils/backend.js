@@ -24,7 +24,7 @@ export async function createTable(signer) {
   return allPetition.txn.name;
 }
 
-export async function addCommit(signer) {
+export async function addCommit(signer, numFile, cId, hash, title) {
   const db = new Database(signer);
   const { meta: addPetition } = await db
     .prepare(
@@ -32,25 +32,40 @@ export async function addCommit(signer) {
     ( ?,?,?,?);
     `
     )
-    .bind(1, "cid", "hash", "title1")
+    .bind(numFile, cId, hash, title)
     .run();
   // Wait for transaction finality
   await addPetition.txn.wait();
+  return 0;
 }
 
-export async function readData() {
+export async function readTable(tableId) {
   const db = new Database();
   const { results } = await db
-    .prepare(`SELECT * FROM ${"secureStamp_314159_239"};`)
+    .prepare(`SELECT * FROM secureStamp_314159_${tableId};`)
     .all();
 
   console.log(results);
   return results;
 }
 
+export async function readLastCommit(tableId) {
+  const db = new Database();
+  const { results } = await db
+    .prepare(`SELECT * FROM secureStamp_314159_${tableId};`)
+    .all();
+
+  console.log("lastroothash: " + results[results.length - 1].hash);
+  return results[results.length - 1].hash;
+}
+
 export async function getTables(signer) {
-  const reg = await new Registry({ signer });
-  const results = await reg.listTables();
-  console.log(results[0]);
-  return results;
+  try {
+    const reg = await new Registry({ signer });
+    const results = await reg.listTables();
+    return results && results[0].tableId ? results[0].tableId : 0;
+  } catch (error) {
+    return 0;
+  }
+  // console.log(results[0]);
 }

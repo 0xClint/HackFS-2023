@@ -3,42 +3,66 @@ import { useContext, useState, useEffect } from "react";
 import { Message_data } from "@/context/context";
 import { useMoralis } from "react-moralis";
 import { Header } from "@/components";
-import { downloadSequence } from "@/utils/getSequence";
+import { downloadHash, downloadSequence } from "@/utils/getSequence";
 import { FileIcon } from "@/assets";
 import { ethers } from "ethers";
+import Link from "next/link";
 import loaderGif from "@/assets/loader.json";
 import Lottie from "react-lottie-player";
-import { addCommit, createTable, getTables, readData } from "@/utils/backend";
+import {
+  addCommit,
+  createTable,
+  getTables,
+  readLastCommit,
+  readTable,
+} from "@/utils/backend";
+import fileHash from "@/utils/FileHash";
+import getMerkleRootHash from "@/utils/MerkleTree";
+import Image from "next/image";
+import hashIcon from "@/assets/hash.png";
+import lightHouseIcon from "@/assets/lighthouse.png";
+import web3StorageIcon from "@/assets/web3Storage.png";
+import blockChainIcon from "@/assets/blockchain.png";
+import { uploadWeb3 } from "@/utils/web3Storage";
 
 const page = () => {
   const { titleStore, fileStore, setFileStore } = useContext(Message_data);
-  const { isWeb3Enabled, account } = useMoralis();
-  const [isLoader, setIsLoader] = useState(false);
-  const [firstComit, setfisrtCommit] = useState(true);
-  const [loader, setLoader] = useState(false);
+  const { account } = useMoralis();
   const [title, setTitle] = useState("");
   const [file, setFile] = useState([]);
-  console.log(fileStore);
+  const [lastMerkleRoot, setLastMerkleRoot] = useState("");
+  const [tableId, setTableId] = useState("");
+  const [isNewUser, setisNewUser] = useState(true);
+  const [rootHash, setRootHash] = useState("");
+  const [tableExist, settableExist] = useState(false);
+  const [loader, setLoader] = useState(false);
+  const [isModal, setIsModal] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  // console.log(fileStore);
+  console.log();
 
   useEffect(() => {
     setFile(fileStore);
   }, []);
 
   useEffect(() => {
-    if (!isWeb3Enabled) {
-    }
-  });
-
-  useEffect(() => {
-    const firstCommit = async () => {
+    const getTemp = async () => {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       await provider.send("eth_requestAccounts", []);
       const signer = await provider.getSigner();
-      // await createTable(signer);
-      await getTables(signer);
+      let res = await getTables(signer);
+      // console.log(res);
+      if (res == 0) {
+        setisNewUser(true);
+      } else {
+        setisNewUser(false);
+        setTableId(res);
+        setLastMerkleRoot(await readLastCommit(res));
+      }
     };
-    firstCommit();
-  });
+    getTemp();
+  }, [account]);
+
   const handleExtraUpload = async (e) => {
     console.log(e.target.files);
     setFile([...file, ...e.target.files]);
@@ -56,56 +80,146 @@ const page = () => {
   };
 
   const downloadList = async () => {
-    // downloadSequence(file);
-    // const provider = new ethers.providers.Web3Provider(window.ethereum);
-    // await provider.send("eth_requestAccounts", []);
-    // const signer = await provider.getSigner();
-    // await addCommit(signer);
+    downloadSequence(file);
+  };
+
+  const handledownloadHash = () => {
+    downloadHash(rootHash);
   };
 
   const generateHash = async () => {
+    if (file.length != 0) {
+      setLoader(true);
+      setTimeout(async () => {
+        let hashes = [lastMerkleRoot];
+
+        if (isNewUser) {
+          hashes = [];
+        }
+
+        let tempHash;
+        for (let i = 0; i < file.length; i++) {
+          let hash = await fileHash(file[i]);
+          // console.log(hash);
+          await hashes.push(hash);
+        }
+        tempHash = await getMerkleRootHash(hashes);
+        await setRootHash(tempHash);
+        setLoader(false);
+        setIsModal(true);
+      }, 2000);
+    }
+  };
+
+  const createUserTable = async () => {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     await provider.send("eth_requestAccounts", []);
     const signer = await provider.getSigner();
-    // await createTable(signer);
-    await getTables(signer);
-
-    // if (file.length != 0) {
-    // }
+    await createTable(signer);
   };
+
+  const addUserCommit = async () => {
+    setIsModal(false);
+    setLoader(true);
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    await provider.send("eth_requestAccounts", []);
+    const signer = await provider.getSigner();
+    const cId = await uploadWeb3(file);
+    console.log(signer, file.length, cId, rootHash, titleStore);
+
+    await addCommit(signer, file.length, cId, rootHash, titleStore);
+    setLoader(false);
+    setIsSuccess(true);
+  };
+
   return (
     <div className="bg-[#1F1D2B] w-screen h-screen text-white">
-      <Header />{" "}
-      {/* {success && (
+      <Header />
+      {isModal && (
         <div
-          className="fixed w-screen h-[100%] bg-slate-500 flex justify-center items-center -z-1"
+          className="fixed top-0 w-screen h-[100%]  flex justify-center items-center -z-1"
           style={{ background: "rgba(0, 0, 0, 0.27)" }}
         >
-          <div className="z-1000 w-[400px] text-center  bg-[#ffffff] rounded-xl py-10 px-10 flex flex-col justify-center items-center gap-5">
-            <div className="flex flex-col justify-center items-center">
-              <h2 className=" text-[1.5rem] mb-2">Creation Successful</h2>
-              <p className="font-medium w-[70%] ">
-                You successfully created product
+          <div className="z-1000 w-[450px] text-center  bg-[#252836] rounded-xl py-10 px-10 flex flex-col justify-center items-center gap-3">
+            <h2 className=" text-[1.5rem] mb-2">Hash Generated!</h2>
+            <Image src={hashIcon} alt="hash success" height={150} width={150} />
+            <div className="flex flex-col w-[100%] text-center">
+              <p className="font-medium  ">Your Hash:</p>
+              <p className="w-[100%] break-words">
+                {rootHash ? rootHash : "rootHash"}
+              </p>
+              <p
+                className=" text-blue-600 underline cursor-pointer"
+                onClick={() => handledownloadHash()}
+              >
+                download hash
               </p>
             </div>
-            <img
-              src={require("../assets/success.png")}
-              className="h-32 mb-2"
-            ></img>
             <div>
-              <Link to={`/orders`}>
-                <button className="bg-primaryColor text-[#ffffff] text-white py-2 px-6 w-52 rounded-[5px] text-[1.1rem] hover:bg-[#007AAF]">
-                  Track your Order
+              <h2>Save files on</h2>
+              <div className="flex justify-center items-center gap-4 my-2">
+                <Image
+                  src={lightHouseIcon}
+                  height={45}
+                  width={45}
+                  className="cursor-pointer hover:scale-110"
+                ></Image>
+                <Image
+                  src={web3StorageIcon}
+                  height={45}
+                  width={45}
+                  className="cursor-pointer hover:scale-110"
+                ></Image>
+              </div>
+            </div>
+            <div>
+              <button
+                onClick={() => addUserCommit()}
+                className="bg-[#565F8B] text-[1.2rem] font-medium w-[120px] py-3 rounded-md"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {isSuccess && (
+        <div
+          className="fixed top-0 w-screen h-[100%]  flex justify-center items-center -z-1"
+          style={{ background: "rgba(0, 0, 0, 0.27)" }}
+        >
+          <div className="z-1000 w-[450px] text-center  bg-[#252836] rounded-xl py-8 px-10 flex flex-col justify-center items-center gap-5">
+            <h2 className=" text-[1.5rem] mb-2">Commit Added!</h2>
+            <Image
+              src={blockChainIcon}
+              alt="hash success"
+              height={150}
+              width={150}
+            />
+            <div className="flex flex-col justify-center items-center w-[100%] text-center">
+              <p className="font-medium  mb-3">Thank you for using</p>
+              <p
+                className=" text-blue-600 underline cursor-pointer"
+                onClick={() => handledownloadHash()}
+              >
+                get Root Hash
+              </p>
+            </div>
+
+            <div>
+              <Link href={`/menu`}>
+                <button className="bg-[#565F8B] text-[1.2rem] font-medium w-[120px] py-3 rounded-md">
+                  Add more
                 </button>
               </Link>
             </div>
           </div>
         </div>
-      )} */}
+      )}
       {loader && (
         <div
-          className="fixed w-screen h-screen bg-slate-500 flex justify-center items-center"
-          style={{ background: "rgba(255, 255, 255, 0.65)" }}
+          className="fixed top-0 w-screen h-screen flex justify-center items-center"
+          style={{ background: "rgba(223, 223, 223, 0.22)" }}
         >
           <Lottie
             loop
@@ -153,31 +267,42 @@ const page = () => {
             </p>
           </div>
           <div>
-            <div className="flex gap-3 ">
-              <button className=" w-[25%] border rounded-lg">
-                <label className="w-full h-full flex justify-center items-center">
-                  Upload more
-                  <input
-                    type="file"
-                    className="hidden"
-                    multiple
-                    onInputCapture={(e) => handleExtraUpload(e)}
-                  />
-                </label>
-              </button>
-              <button
-                onClick={() => generateHash()}
-                className="bg-[#565F8B] text-[1.5rem] font-semibold w-[50%] py-3 rounded-lg"
-              >
-                Generate Hash
-              </button>
-              <button
-                className=" w-[25%] border rounded-lg m-0 leading-5"
-                onClick={() => downloadList()}
-              >
-                Download
-                <br /> Sequence
-              </button>
+            <div>
+              {isNewUser ? (
+                <button
+                  onClick={() => createUserTable()}
+                  className="bg-[#565F8B] text-[1.5rem] font-semibold w-[100%] py-3 rounded-lg"
+                >
+                  Create Table
+                </button>
+              ) : (
+                <div className="flex gap-3 ">
+                  <button className=" w-[25%] border rounded-lg">
+                    <label className="w-full h-full flex justify-center items-center">
+                      Upload more
+                      <input
+                        type="file"
+                        className="hidden"
+                        multiple
+                        onInputCapture={(e) => handleExtraUpload(e)}
+                      />
+                    </label>
+                  </button>
+                  <button
+                    onClick={() => generateHash()}
+                    className="bg-[#565F8B] text-[1.5rem] font-semibold w-[50%] py-3 rounded-lg"
+                  >
+                    Generate Hash
+                  </button>
+                  <button
+                    className=" w-[25%] border rounded-lg m-0 leading-5"
+                    onClick={() => downloadList()}
+                  >
+                    Download
+                    <br /> Sequence
+                  </button>
+                </div>
+              )}
             </div>
             <p className="text-[0.9rem] mt-2 text-[#B7B9D2]">
               You should ensure that you keep track of the files associated with
