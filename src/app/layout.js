@@ -1,4 +1,3 @@
-"use client";
 import { MoralisProvider } from "react-moralis";
 import "./globals.css";
 import { Inter } from "next/font/google";
