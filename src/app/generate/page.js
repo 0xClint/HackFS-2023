@@ -67,7 +67,7 @@ const page = () => {
       }
     };
     getTemp();
-  }, [account]);
+  }, [account, loader]);
 
   const handleExtraUpload = async (e) => {
     console.log(e.target.files);
@@ -97,13 +97,13 @@ const page = () => {
     if (file.length != 0) {
       setLoader(true);
       setTimeout(async () => {
-        let hashes = [lastMerkleRoot];
+        let hashes = [];
         console.log(
           "lastMerkleRoot:  " + (lastMerkleRoot ? lastMerkleRoot : "none")
         );
 
-        if (isNewUser) {
-          hashes = [];
+        if (lastMerkleRoot) {
+          hashes = [lastMerkleRoot];
         }
 
         let tempHash;
