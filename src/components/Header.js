@@ -1,8 +1,8 @@
 "use client";
-import React, { useEffect } from "react";
 import ConnectWallet from "./ConnectWallet";
 import Link from "next/link";
-// import { Logo } from "../assets";
+import Image from "next/image";
+import logoIcon from "@/assets/logo.png";
 
 const Header = () => {
   return (
@@ -13,6 +13,7 @@ const Header = () => {
           className="logo w-[55px] h-[55px] bg-white rounded-[50%] text-[#646D8A] mr-10 flex justify-center items-center"
         >
           {/* <Logo className="w-26 h-26" /> */}
+          <Image src={logoIcon} height={40} width={40}></Image>
         </Link>
 
         <div className="midItems list-none  gap-16 text-white text-[1.1rem] flex">
