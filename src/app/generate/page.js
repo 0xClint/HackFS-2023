@@ -51,13 +51,19 @@ const page = () => {
       await provider.send("eth_requestAccounts", []);
       const signer = await provider.getSigner();
       let res = await getTables(signer);
-      // console.log(res);
+      console.log("tableID:" + res);
       if (res == 0) {
         setisNewUser(true);
       } else {
         setisNewUser(false);
         setTableId(res);
-        setLastMerkleRoot(await readLastCommit(res));
+        let lastcommit = await readLastCommit(res);
+        console.log(lastcommit);
+        if (lastcommit) {
+          setLastMerkleRoot(lastcommit);
+        } else {
+          setisNewUser(ture);
+        }
       }
     };
     getTemp();
@@ -125,9 +131,9 @@ const page = () => {
     await provider.send("eth_requestAccounts", []);
     const signer = await provider.getSigner();
     const cId = await uploadWeb3(file);
-    console.log(signer, file.length, cId, rootHash, titleStore);
+    console.log(file.length, cId, rootHash, titleStore);
 
-    await addCommit(signer, file.length, cId, rootHash, titleStore);
+    await addCommit(tableId, signer, file.length, cId, rootHash, titleStore);
     setLoader(false);
     setIsSuccess(true);
   };
@@ -207,7 +213,7 @@ const page = () => {
             </div>
 
             <div>
-              <Link href={`/menu`}>
+              <Link href={`/`}>
                 <button className="bg-[#565F8B] text-[1.2rem] font-medium w-[120px] py-3 rounded-md">
                   Add more
                 </button>

@@ -21,31 +21,33 @@ export async function createTable(signer) {
 
   await console.log(userTable.txn.name);
 
-  return allPetition.txn.name;
+  return userTable.txn.name;
 }
 
-export async function addCommit(signer, numFile, cId, hash, title) {
+export async function addCommit(tableId, signer, numFile, cId, hash, title) {
   const db = new Database(signer);
-  const { meta: addPetition } = await db
+  const { meta: addCommit } = await db
     .prepare(
-      `INSERT INTO ${"secureStamp_314159_239"} (numFile,cid,hash,title) VALUES
+      `INSERT INTO secureStamp_314159_${tableId} (numFile,cid,hash,title) VALUES
     ( ?,?,?,?);
     `
     )
     .bind(numFile, cId, hash, title)
     .run();
   // Wait for transaction finality
-  await addPetition.txn.wait();
-  return 0;
+  setTimeout(() => {
+    // await addCommit.txn.wait();
+    return 0;
+  }, 9000);
 }
 
 export async function readTable(tableId) {
+  console.log(tableId);
   const db = new Database();
   const { results } = await db
     .prepare(`SELECT * FROM secureStamp_314159_${tableId};`)
     .all();
 
-  console.log(results);
   return results;
 }
 
@@ -55,8 +57,12 @@ export async function readLastCommit(tableId) {
     .prepare(`SELECT * FROM secureStamp_314159_${tableId};`)
     .all();
 
-  console.log("lastroothash: " + results[results.length - 1].hash);
-  return results[results.length - 1].hash;
+  console.log(
+    "lastroothash: " + results && results[0]
+      ? results[results.length - 1].hash
+      : results
+  );
+  return results && results[0] ? results[results.length - 1].hash : false;
 }
 
 export async function getTables(signer) {

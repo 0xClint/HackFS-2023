@@ -237,7 +237,6 @@ const page = ({ params }) => {
               </div>
             </div>
             <div className="mt-2">
-              <p className="h-6">Error</p>
               <div className="flex gap-3">
                 <Link
                   href="/commits"
