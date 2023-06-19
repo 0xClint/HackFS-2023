@@ -16,3 +16,10 @@ export async function uploadWeb3(file) {
     return cid;
   }
 }
+export async function retrieveData(cid) {
+  const client = makeStorageClient();
+  const res = await client.get(cid);
+  const files = await res.files();
+  console.log(files);
+  return files;
+}

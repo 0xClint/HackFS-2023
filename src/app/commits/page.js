@@ -14,6 +14,7 @@ const page = () => {
 
   useEffect(() => {
     const getData = async () => {
+      setLoader(true);
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       await provider.send("eth_requestAccounts", []);
       const signer = await provider.getSigner();
@@ -25,6 +26,7 @@ const page = () => {
         setisNewUser(false);
         setTabledata(await readTable(res));
       }
+      setLoader(false);
     };
     getData();
   }, []);

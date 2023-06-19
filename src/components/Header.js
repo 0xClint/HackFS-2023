@@ -17,10 +17,6 @@ const Header = () => {
 
         <div className="midItems list-none  gap-16 text-white text-[1.1rem] flex">
           <li className="cursor-pointer">
-            <Link href="/">Home</Link>
-          </li>
-
-          <li className="cursor-pointer">
             <Link href="/">App Menu</Link>
           </li>
           <li className="cursor-pointer">

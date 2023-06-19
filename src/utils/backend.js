@@ -69,3 +69,15 @@ export async function getTables(signer) {
   }
   // console.log(results[0]);
 }
+
+export async function getLastCommits(commits, targetHash) {
+  const targetIndex = await commits.findIndex((obj) => obj.hash === targetHash);
+  if (targetIndex !== -1) {
+    const targetObject = commits[targetIndex];
+    const precedingObject = targetIndex > 0 ? commits[targetIndex - 1] : null;
+
+    // console.log("Target Hash:", targetObject);
+    // console.log("Preceding Hash:", precedingObject);
+    return [precedingObject, targetObject];
+  }
+}
