@@ -98,6 +98,9 @@ const page = () => {
       setLoader(true);
       setTimeout(async () => {
         let hashes = [lastMerkleRoot];
+        console.log(
+          "lastMerkleRoot:  " + (lastMerkleRoot ? lastMerkleRoot : "none")
+        );
 
         if (isNewUser) {
           hashes = [];
@@ -106,7 +109,7 @@ const page = () => {
         let tempHash;
         for (let i = 0; i < file.length; i++) {
           let hash = await fileHash(file[i]);
-          // console.log(hash);
+          console.log(hash);
           await hashes.push(hash);
         }
         tempHash = await getMerkleRootHash(hashes);
@@ -118,10 +121,12 @@ const page = () => {
   };
 
   const createUserTable = async () => {
+    setLoader(true);
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     await provider.send("eth_requestAccounts", []);
     const signer = await provider.getSigner();
     await createTable(signer);
+    setLoader(false);
   };
 
   const addUserCommit = async () => {

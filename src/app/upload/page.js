@@ -27,7 +27,7 @@ const page = () => {
   };
   return (
     <div className="bg-[#1F1D2B] w-screen h-screen text-white">
-      <Header />
+      <Header />{" "}
       <div className="w-[100%] h-[100%] flex justify-center items-start pt-24">
         <div className="container h-[350px] w-[600px] rounded-3xl py-7  bg-[#252836] px-7 text-center flex flex-col  gap-7">
           <div className="">

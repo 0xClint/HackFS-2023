@@ -8,8 +8,11 @@ export default function Home() {
       <div className="w-[100%] h-[100%] flex justify-center items-start pt-24">
         <div className="container h-[300px] w-[600px] rounded-3xl py-7  bg-[#252836] px-7 text-center flex flex-col justify-between gap-7">
           <div>
-            <h2 className=" text-[2rem] font-medium">Project name</h2>
-            <p>Lorem Ipsum</p>
+            <h2 className=" text-[2rem] font-medium">Secure Stamp</h2>
+            <p>
+              A cryptographically secure time stamping Dapp to save your most
+              important work in time.
+            </p>
           </div>
           <div className="flex gap-3">
             <Link
@@ -19,7 +22,7 @@ export default function Home() {
               Upload
             </Link>
             <Link
-              href={"/verify"}
+              href={"/commits"}
               className="bg-[#353340] text-[1.5rem] font-semibold w-[50%] py-3 rounded-lg"
             >
               Verify

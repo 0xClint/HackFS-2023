@@ -61,11 +61,19 @@ const page = ({ params }) => {
       setLoader(true);
       setTimeout(async () => {
         console.log(prevCommit);
-        let hashes = [prevCommit ? prevCommit.hash : null];
+        let hashes = [];
+        if (prevCommit) {
+          console.log("prevCommit present" + prevCommit.hash);
+          hashes = [prevCommit.hash];
+        } else {
+          console.log("prevCommit absent");
+          hashes = [];
+        }
 
         let tempHash;
         for (let i = 0; i < file.length; i++) {
           let hash = await fileHash(file[i]);
+          console.log(hash);
           await hashes.push(hash);
         }
         tempHash = await getMerkleRootHash(hashes);
